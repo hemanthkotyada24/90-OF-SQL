@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Commands Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Clash+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060910;
+  --surface: #0d1117;
+  --card: #0f1620;
+  --card-hover: #141e2e;
+  --border: #1a2535;
+  --border-bright: #243347;
+
+  --c1: #38bdf8; /* sky */
+  --c2: #818cf8; /* indigo */
+  --c3: #34d399; /* emerald */
+  --c4: #fb923c; /* orange */
+  --c5: #e879f9; /* fuchsia */
+  --c6: #facc15; /* yellow */
+
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #475569;
+
+  --kw: #ff7b72;
+  --fn: #d2a8ff;
+  --str: #a5d6ff;
+  --num: #79c0ff;
+  --cm: #6e7681;
+  --tbl: #ffa657;
+  --col: #79c0ff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* BG texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(56,189,248,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(129,140,248,0.07) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  position: relative;
+  z-index: 10;
+  padding: 80px 24px 56px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.tag-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 6px 18px;
+  border: 1px solid rgba(56,189,248,0.2);
+  border-radius: 100px;
+  background: rgba(56,189,248,0.05);
+}
+.tag-line::before { content: '◈'; }
+
+h1 {
+  font-family: 'Clash Display', 'Syne', sans-serif;
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 20px;
+}
+h1 .line1 { display: block; color: #fff; }
+h1 .line2 {
+  display: block;
+  background: linear-gradient(90deg, var(--c1) 0%, var(--c2) 50%, var(--c5) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: var(--text-dim);
+  font-size: 1rem;
+  max-width: 480px;
+  margin: 0 auto 40px;
+  line-height: 1.65;
+}
+
+/* Stats bar */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+.stat { text-align: center; }
+.stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Search */
+.search-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+}
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+input[type=text] {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 16px 11px 40px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+input[type=text]::placeholder { color: var(--text-muted); }
+input[type=text]:focus {
+  border-color: var(--c1);
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
+}
+
+/* Filter pills */
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 14px;
+}
+.filter-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--c1);
+  color: var(--c1);
+  background: rgba(56,189,248,0.07);
+}
+
+/* ── MAIN ── */
+main {
+  position: relative;
+  z-index: 10;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 60px 24px 100px;
+}
+
+/* Section label */
+.sec-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sec-label::before {
+  content: '';
+  width: 28px; height: 2px;
+  background: var(--c1);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.sec-label::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+
+/* Progress tracker */
+.progress-bar-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.progress-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.progress-track {
+  flex: 1;
+  min-width: 160px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+  border-radius: 3px;
+  width: 0%;
+  transition: width .4s ease;
+}
+.progress-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c1);
+  white-space: nowrap;
+}
+.reset-btn {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.reset-btn:hover { color: var(--kw); border-color: rgba(255,123,114,0.3); }
+
+/* ── CARDS ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
+  margin-bottom: 60px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+  animation: cardIn .5s both;
+  position: relative;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+@keyframes cardIn {
+  from { opacity:0; transform: translateY(18px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* stagger */
+.card:nth-child(1)  { animation-delay:.04s } .card:nth-child(2)  { animation-delay:.08s }
+.card:nth-child(3)  { animation-delay:.12s } .card:nth-child(4)  { animation-delay:.16s }
+.card:nth-child(5)  { animation-delay:.20s } .card:nth-child(6)  { animation-delay:.24s }
+.card:nth-child(7)  { animation-delay:.28s } .card:nth-child(8)  { animation-delay:.32s }
+.card:nth-child(9)  { animation-delay:.36s } .card:nth-child(10) { animation-delay:.40s }
+.card:nth-child(11) { animation-delay:.44s } .card:nth-child(12) { animation-delay:.48s }
+
+/* Color themes per card */
+.card[data-c="sky"]     { --cc: var(--c1); --cc-bg: rgba(56,189,248,.08);  --cc-b: rgba(56,189,248,.25); }
+.card[data-c="indigo"]  { --cc: var(--c2); --cc-bg: rgba(129,140,248,.08); --cc-b: rgba(129,140,248,.25); }
+.card[data-c="emerald"] { --cc: var(--c3); --cc-bg: rgba(52,211,153,.08);  --cc-b: rgba(52,211,153,.25); }
+.card[data-c="orange"]  { --cc: var(--c4); --cc-bg: rgba(251,146,60,.08);  --cc-b: rgba(251,146,60,.25); }
+.card[data-c="fuchsia"] { --cc: var(--c5); --cc-bg: rgba(232,121,249,.08); --cc-b: rgba(232,121,249,.25); }
+.card[data-c="yellow"]  { --cc: var(--c6); --cc-bg: rgba(250,204,21,.08);  --cc-b: rgba(250,204,21,.25); }
+
+.card:hover { border-color: var(--cc-b); }
+
+/* Card accent line */
+.card-accent {
+  height: 3px;
+  background: var(--cc);
+  opacity: 0.8;
+}
+
+/* Card header */
+.card-header {
+  padding: 20px 22px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-icon-num {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--cc-bg);
+  border: 1px solid var(--cc-b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.card-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.card-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--cc-bg);
+  color: var(--cc);
+  border: 1px solid var(--cc-b);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Learn button */
+.learn-btn {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.learn-btn:hover, .learn-btn.done {
+  background: var(--cc-bg);
+  border-color: var(--cc-b);
+  color: var(--cc);
+}
+.learn-btn.done { color: var(--c3); border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.08); }
+
+/* Card body */
+.card-body { padding: 14px 22px 0; }
+
+.card-title {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.card-meaning {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+
+/* Keywords */
+.kw-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.kw-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: #94a3b8;
+  transition: all .15s;
+  cursor: default;
+}
+.kw-pill:hover {
+  background: var(--cc-bg);
+  color: var(--cc);
+  border-color: var(--cc-b);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin: 0 -22px;
+  padding: 0 22px;
+}
+.tab-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all .15s;
+}
+.tab-btn.active, .tab-btn:hover { color: var(--cc); border-bottom-color: var(--cc); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Code block */
+.code-wrap {
+  padding: 16px 0 20px;
+}
+.code-block {
+  background: #090d13;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+  overflow-x: auto;
+  position: relative;
+}
+.code-block .kw  { color: var(--kw); font-weight: 600; }
+.code-block .fn  { color: var(--fn); }
+.code-block .str { color: var(--str); }
+.code-block .num { color: var(--num); }
+.code-block .cm  { color: var(--cm); font-style: italic; }
+.code-block .tbl { color: var(--tbl); }
+.code-block .col { color: var(--col); }
+.copy-btn {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.copy-btn:hover { color: var(--c1); border-color: rgba(56,189,248,.3); }
+.copy-btn.ok { color: var(--c3); border-color: rgba(52,211,153,.35); }
+
+/* Info panel */
+.info-wrap { padding: 16px 0 20px; }
+.info-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.info-list li {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  display: flex;
+  gap: 10px;
+}
+.info-list li::before {
+  content: '→';
+  color: var(--cc);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── MIND MAP TABLE ── */
+.mindmap-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+.mindmap-header {
+  padding: 28px 32px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(56,189,248,.07), rgba(129,140,248,.07));
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.mindmap-header .mm-icon { font-size: 2.2rem; }
+.mindmap-header h2 {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.mindmap-header p { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: rgba(255,255,255,0.02); }
+thead th {
+  padding: 13px 24px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+}
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background .15s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(56,189,248,0.02); }
+tbody td { padding: 13px 24px; font-size: 14px; vertical-align: middle; }
+
+.mm-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.mm-concept {
+  font-weight: 600;
+  color: var(--text);
+}
+.mm-sql {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* Cycle colors */
+tr:nth-child(6n+1) .mm-sql { background: rgba(56,189,248,.1);  color: var(--c1); }
+tr:nth-child(6n+2) .mm-sql { background: rgba(129,140,248,.1); color: var(--c2); }
+tr:nth-child(6n+3) .mm-sql { background: rgba(52,211,153,.1);  color: var(--c3); }
+tr:nth-child(6n+4) .mm-sql { background: rgba(251,146,60,.1);  color: var(--c4); }
+tr:nth-child(6n+5) .mm-sql { background: rgba(232,121,249,.1); color: var(--c5); }
+tr:nth-child(6n+0) .mm-sql { background: rgba(250,204,21,.1);  color: var(--c6); }
+
+.mm-think { color: var(--text-dim); font-size: 13px; }
+
+/* Hidden */
+.card.hidden { display: none; }
+
+/* Footer */
+footer {
+  position: relative; z-index: 10;
+  text-align: center;
+  padding: 32px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+footer a { color: var(--c1); text-decoration: none; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@media(max-width:640px) {
+  .cards-grid { grid-template-columns: 1fr; }
+  .stats { gap: 24px; }
+  header { padding: 56px 16px 40px; }
+  thead th, tbody td { padding: 10px 14px; }
+  .mindmap-header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="tag-line">SQL Commands · Complete Reference</div>
+  <h1>
+    <span class="line1">SQL Commands</span>
+    <span class="line2">Cheat Sheet</span>
+  </h1>
+  <p class="subtitle">Every core SQL command mapped to the English keywords that signal it — with syntax, examples, and tips.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">12</div><div class="stat-label">Commands</div></div>
+    <div class="stat"><div class="stat-num">60+</div><div class="stat-label">Keywords</div></div>
+    <div class="stat"><div class="stat-num">15+</div><div class="stat-label">Examples</div></div>
+  </div>
+
+  <div class="search-row">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Search command or keyword...">
+    </div>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="read">Read Data</button>
+    <button class="filter-btn" data-filter="filter">Filter</button>
+    <button class="filter-btn" data-filter="group">Group</button>
+    <button class="filter-btn" data-filter="join">Join</button>
+    <button class="filter-btn" data-filter="logic">Logic</button>
+    <button class="filter-btn" data-filter="agg">Aggregate</button>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- Progress -->
+  <div class="progress-bar-wrap">
+    <span class="progress-label">📚 Learning Progress</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-count" id="progressCount">0 / 12 learned</span>
+    <button class="reset-btn" onclick="resetProgress()">Reset</button>
+  </div>
+
+  <div class="sec-label">12 Core Commands</div>
+
+  <div class="cards-grid" id="cardsGrid">
+
+    <!-- 1 SELECT -->
+    <div class="card" data-c="sky" data-cat="read" data-kw="select read show list display get fetch records data">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">📋</div>
+          <div>
+            <div class="card-num">01 · READ</div>
+          </div>
+        </div>
+        <span class="card-badge">SELECT</span>
+        <button class="learn-btn" title="Mark as learned" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Select — Fetch Data</div>
+        <div class="card-meaning">Used to retrieve data from one or more columns in a table.</div>
+        <div class="kw-row">
+          <span class="kw-pill">show</span><span class="kw-pill">list</span>
+          <span class="kw-pill">display</span><span class="kw-pill">get data</span>
+          <span class="kw-pill">fetch records</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> <span class="col">column1</span>, <span class="col">column2</span>
+<span class="kw">FROM</span> <span class="tbl">table_name</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> <span class="col">name</span>, <span class="col">age</span>
+<span class="kw">FROM</span> <span class="tbl">students</span>;
+
+<span class="cm">-- Select all columns</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>Use <code>SELECT *</code> to fetch every column</li>
+            <li>Always specify columns in production for performance</li>
+            <li>Column aliases: <code>SELECT name AS student_name</code></li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 WHERE -->
+    <div class="card" data-c="indigo" data-cat="filter" data-kw="where filter rows only condition greater less equals specific value">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">🔍</div>
+          <div><div class="card-num">02 · FILTER</div></div>
+        </div>
+        <span class="card-badge">WHERE</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Where — Filter Rows</div>
+        <div class="card-meaning">Filters rows <strong style="color:#fff">before</strong> any grouping. Applied to individual rows.</div>
+        <div class="kw-row">
+          <span class="kw-pill">only</span><span class="kw-pill">condition</span>
+          <span class="kw-pill">greater than</span><span class="kw-pill">less than</span>
+          <span class="kw-pill">equals</span><span class="kw-pill">specific value</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> *
+<span class="kw">FROM</span> <span class="tbl">table</span>
+<span class="kw">WHERE</span> condition;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">WHERE</span> <span class="col">age</span> > <span class="num">18</span>;
+
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">employees</span>
+<span class="kw">WHERE</span> <span class="col">dept</span> = <span class="str">'HR'</span>
+  <span class="kw">AND</span> <span class="col">salary</span> > <span class="num">50000</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>WHERE runs before GROUP BY — can't filter aggregates here</li>
+            <li>Use AND / OR to combine multiple conditions</li>
+            <li>Use IN: <code>WHERE city IN ('Delhi','Mumbai')</code></li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 GROUP BY -->
+    <div class="card" data-c="emerald" data-cat="group" data-kw="group by each per for every category groupwise analysis department">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">📦</div>
+          <div><div class="card-num">03 · GROUP</div></div>
+        </div>
+        <span class="card-badge">GROUP BY</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Group By — Bucket Rows</div>
+        <div class="card-meaning">Groups rows with the same value so aggregate functions can be applied per group.</div>
+        <div class="kw-row">
+          <span class="kw-pill">each</span><span class="kw-pill">per</span>
+          <span class="kw-pill">for every</span><span class="kw-pill">group-wise</span>
+          <span class="kw-pill">by category</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> <span class="col">column</span>, <span class="fn">AGG_FUNC</span>()
+<span class="kw">FROM</span> <span class="tbl">table</span>
+<span class="kw">GROUP BY</span> <span class="col">column</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> <span class="col">city</span>, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">GROUP BY</span> <span class="col">city</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>Every non-aggregate SELECT column must appear in GROUP BY</li>
+            <li>Use with MIN, MAX, SUM, AVG, COUNT for group summaries</li>
+            <li>Add HAVING after to filter the resulting groups</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 HAVING -->
+    <div class="card" data-c="orange" data-cat="filter group" data-kw="having filter groups more than categories only where after grouping">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">🧹</div>
+          <div><div class="card-num">04 · FILTER GROUPS</div></div>
+        </div>
+        <span class="card-badge">HAVING</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Having — Filter Groups</div>
+        <div class="card-meaning">Filters <strong style="color:#fff">after</strong> grouping. Used when WHERE can't filter aggregates.</div>
+        <div class="kw-row">
+          <span class="kw-pill">having more than</span>
+          <span class="kw-pill">groups with</span>
+          <span class="kw-pill">only categories where</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">GROUP BY</span> <span class="col">column</span>
+<span class="kw">HAVING</span> condition;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> <span class="col">city</span>, <span class="fn">COUNT</span>(*)
+<span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">GROUP BY</span> <span class="col">city</span>
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="num">5</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>WHERE filters rows; HAVING filters groups — don't mix them up</li>
+            <li>You can use any aggregate function in HAVING</li>
+            <li>Always comes after GROUP BY, before ORDER BY</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 ORDER BY -->
+    <div class="card" data-c="fuchsia" data-cat="read" data-kw="order by sort highest lowest top bottom ascending descending asc desc rank">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">↕️</div>
+          <div><div class="card-num">05 · SORT</div></div>
+        </div>
+        <span class="card-badge">ORDER BY</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Order By — Sort Results</div>
+        <div class="card-meaning">Sorts the result set in ascending or descending order by one or more columns.</div>
+        <div class="kw-row">
+          <span class="kw-pill">highest</span><span class="kw-pill">lowest</span>
+          <span class="kw-pill">top</span><span class="kw-pill">bottom</span>
+          <span class="kw-pill">sorted</span><span class="kw-pill">ascending</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">ORDER BY</span> <span class="col">column</span> <span class="kw">ASC</span>|<span class="kw">DESC</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="cm">-- Highest first</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">ORDER BY</span> <span class="col">age</span> <span class="kw">DESC</span>;
+
+<span class="cm">-- Lowest first</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">products</span>
+<span class="kw">ORDER BY</span> <span class="col">price</span> <span class="kw">ASC</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>Default is ASC — you can omit it</li>
+            <li>Sort by multiple columns: <code>ORDER BY city, age DESC</code></li>
+            <li>Combine with LIMIT to get Top-N results</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 LIMIT -->
+    <div class="card" data-c="yellow" data-cat="read" data-kw="limit top first few rows restrict n only one highest pick">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">✂️</div>
+          <div><div class="card-num">06 · RESTRICT</div></div>
+        </div>
+        <span class="card-badge">LIMIT</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Limit — Top N Rows</div>
+        <div class="card-meaning">Restricts the number of rows returned. Essential for Top-N queries.</div>
+        <div class="kw-row">
+          <span class="kw-pill">top 1</span><span class="kw-pill">first 5</span>
+          <span class="kw-pill">only few</span><span class="kw-pill">highest one</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">LIMIT</span> n;
+<span class="kw">LIMIT</span> n <span class="kw">OFFSET</span> m; <span class="cm">-- skip m rows</span></div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="cm">-- Top 3 students by marks</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">ORDER BY</span> <span class="col">marks</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">3</span>;
+
+<span class="cm">-- 2nd highest salary</span>
+<span class="kw">SELECT DISTINCT</span> <span class="col">salary</span>
+<span class="kw">FROM</span> <span class="tbl">employees</span>
+<span class="kw">ORDER BY</span> <span class="col">salary</span> <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">1</span> <span class="kw">OFFSET</span> <span class="num">1</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>Always pair with ORDER BY — otherwise rows are random</li>
+            <li>OFFSET 1 skips first row — useful for 2nd highest</li>
+            <li>SQL Server uses TOP n instead of LIMIT</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 JOIN -->
+    <div class="card" data-c="sky" data-cat="join" data-kw="join combine match related data link two tables customer orders student course inner left right">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">🔗</div>
+          <div><div class="card-num">07 · JOIN</div></div>
+        </div>
+        <span class="card-badge">JOIN</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Join — Connect Tables</div>
+        <div class="card-meaning">Combines rows from two or more tables based on a related column.</div>
+        <div class="kw-row">
+          <span class="kw-pill">combine tables</span><span class="kw-pill">match records</span>
+          <span class="kw-pill">related data</span><span class="kw-pill">customer + order</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> *
+<span class="kw">FROM</span> <span class="tbl">A</span>
+<span class="kw">JOIN</span> <span class="tbl">B</span> <span class="kw">ON</span> <span class="tbl">A</span>.<span class="col">id</span> = <span class="tbl">B</span>.<span class="col">id</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> *
+<span class="kw">FROM</span> <span class="tbl">Orders</span>
+<span class="kw">JOIN</span> <span class="tbl">Customers</span>
+  <span class="kw">ON</span> <span class="tbl">Orders</span>.<span class="col">customer_id</span>
+   = <span class="tbl">Customers</span>.<span class="col">id</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>INNER JOIN → only matching rows</li>
+            <li>LEFT JOIN → all from left table + matches from right</li>
+            <li>RIGHT JOIN → all from right table + matches from left</li>
+            <li>FULL OUTER JOIN → all rows from both tables</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8 SUBQUERY -->
+    <div class="card" data-c="indigo" data-cat="logic" data-kw="subquery query inside greater than average compared dynamic condition nested select">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">🪆</div>
+          <div><div class="card-num">08 · NESTED</div></div>
+        </div>
+        <span class="card-badge">SUBQUERY</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Subquery — Query Inside Query</div>
+        <div class="card-meaning">A query nested inside another query. The inner query runs first and its result is used by the outer query.</div>
+        <div class="kw-row">
+          <span class="kw-pill">greater than average</span>
+          <span class="kw-pill">compared to</span>
+          <span class="kw-pill">based on result of</span>
+          <span class="kw-pill">dynamic condition</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> *
+<span class="kw">FROM</span> <span class="tbl">table</span>
+<span class="kw">WHERE</span> <span class="col">col</span> > (<span class="kw">SELECT</span> ...);</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">employees</span>
+<span class="kw">WHERE</span> <span class="col">salary</span> > (
+  <span class="kw">SELECT</span> <span class="fn">AVG</span>(<span class="col">salary</span>)
+  <span class="kw">FROM</span> <span class="tbl">employees</span>
+);</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>Inner query executes first, result is used by outer query</li>
+            <li>Can appear in WHERE, FROM, or SELECT clause</li>
+            <li>CTEs (WITH clause) are often cleaner for complex subqueries</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9 EXISTS -->
+    <div class="card" data-c="emerald" data-cat="logic filter" data-kw="exists check presence has available present another table subquery correlated">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">✅</div>
+          <div><div class="card-num">09 · CHECK</div></div>
+        </div>
+        <span class="card-badge">EXISTS</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Exists — Check Presence</div>
+        <div class="card-meaning">Returns TRUE if the subquery returns at least one row. Stops scanning as soon as a match is found.</div>
+        <div class="kw-row">
+          <span class="kw-pill">if exists</span><span class="kw-pill">has orders</span>
+          <span class="kw-pill">available</span><span class="kw-pill">present in</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">WHERE EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> <span class="tbl">table</span>
+  <span class="kw">WHERE</span> condition
+);</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">customers</span> c
+<span class="kw">WHERE EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> <span class="tbl">orders</span> o
+  <span class="kw">WHERE</span> o.<span class="col">customer_id</span>
+      = c.<span class="col">id</span>
+);</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>Faster than IN for large datasets — stops at first match</li>
+            <li>Use SELECT 1 inside EXISTS — the value doesn't matter</li>
+            <li>NOT EXISTS = find rows with no match in another table</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 CASE -->
+    <div class="card" data-c="orange" data-cat="logic" data-kw="case if else logic grade category classify label condition when then">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">🔀</div>
+          <div><div class="card-num">10 · LOGIC</div></div>
+        </div>
+        <span class="card-badge">CASE WHEN</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Case — If-Else in SQL</div>
+        <div class="card-meaning">Conditional logic inside a query. Like an if-else statement that returns values.</div>
+        <div class="kw-row">
+          <span class="kw-pill">grade</span><span class="kw-pill">category</span>
+          <span class="kw-pill">classify</span><span class="kw-pill">label</span>
+          <span class="kw-pill">if condition</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">CASE</span>
+  <span class="kw">WHEN</span> condition <span class="kw">THEN</span> result
+  <span class="kw">WHEN</span> condition <span class="kw">THEN</span> result
+  <span class="kw">ELSE</span> default_result
+<span class="kw">END</span></div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span> <span class="col">name</span>,
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> <span class="col">marks</span> >= <span class="num">90</span> <span class="kw">THEN</span> <span class="str">'A'</span>
+    <span class="kw">WHEN</span> <span class="col">marks</span> >= <span class="num">75</span> <span class="kw">THEN</span> <span class="str">'B'</span>
+    <span class="kw">ELSE</span> <span class="str">'C'</span>
+  <span class="kw">END AS</span> <span class="col">grade</span>
+<span class="kw">FROM</span> <span class="tbl">students</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>CASE can be used inside SELECT, WHERE, ORDER BY</li>
+            <li>Always close with END and optionally alias it</li>
+            <li>Conditions are checked top-down — first match wins</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11 WINDOW FUNCTIONS -->
+    <div class="card" data-c="fuchsia" data-cat="agg logic" data-kw="window functions rank running total row number partition top per group over analytics dense_rank lag lead">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">🪟</div>
+          <div><div class="card-num">11 · ANALYTICS</div></div>
+        </div>
+        <span class="card-badge">OVER()</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Window Functions — Rank & Analytics</div>
+        <div class="card-meaning">Calculations across rows <strong style="color:#fff">without collapsing them</strong>. The most powerful SQL feature for analytics.</div>
+        <div class="kw-row">
+          <span class="kw-pill">rank</span><span class="kw-pill">running total</span>
+          <span class="kw-pill">row number</span><span class="kw-pill">partition</span>
+          <span class="kw-pill">top per group</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="fn">FUNCTION</span>() <span class="kw">OVER</span> (
+  <span class="kw">PARTITION BY</span> <span class="col">column</span>
+  <span class="kw">ORDER BY</span> <span class="col">column</span>
+)</div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="cm">-- Rank by salary</span>
+<span class="kw">SELECT</span> <span class="col">name</span>,
+  <span class="fn">RANK</span>() <span class="kw">OVER</span> (
+    <span class="kw">ORDER BY</span> <span class="col">salary</span> <span class="kw">DESC</span>
+  ) <span class="kw">AS</span> <span class="col">rnk</span>
+<span class="kw">FROM</span> <span class="tbl">employees</span>;
+
+<span class="cm">-- Running total</span>
+<span class="kw">SELECT</span> <span class="col">name</span>, <span class="col">salary</span>,
+  <span class="fn">SUM</span>(<span class="col">salary</span>) <span class="kw">OVER</span> (
+    <span class="kw">ORDER BY</span> <span class="col">id</span>
+  ) <span class="kw">AS</span> <span class="col">running_total</span>
+<span class="kw">FROM</span> <span class="tbl">employees</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>RANK() — leaves gaps after ties (1,1,3)</li>
+            <li>DENSE_RANK() — no gaps (1,1,2)</li>
+            <li>ROW_NUMBER() — unique row number always</li>
+            <li>LAG/LEAD — access previous/next row values</li>
+            <li>PARTITION BY = GROUP BY equivalent for windows</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12 AGGREGATES -->
+    <div class="card" data-c="yellow" data-cat="agg" data-kw="aggregates min max sum avg count total maximum minimum average how many overall math calculation">
+      <div class="card-accent"></div>
+      <div class="card-header">
+        <div class="card-icon-num">
+          <div class="card-icon">🧮</div>
+          <div><div class="card-num">12 · AGGREGATE</div></div>
+        </div>
+        <span class="card-badge">AGG FUNCS</span>
+        <button class="learn-btn" onclick="toggleLearn(this)">○</button>
+      </div>
+      <div class="card-body">
+        <div class="card-title">Aggregates — Math on Data</div>
+        <div class="card-meaning">Built-in functions that perform calculations on a set of rows and return a single value.</div>
+        <div class="kw-row">
+          <span class="kw-pill">total</span><span class="kw-pill">maximum</span>
+          <span class="kw-pill">minimum</span><span class="kw-pill">average</span>
+          <span class="kw-pill">how many</span><span class="kw-pill">overall</span>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'pattern')">Pattern</button>
+          <button class="tab-btn" onclick="switchTab(this,'example')">Example</button>
+          <button class="tab-btn" onclick="switchTab(this,'tips')">Tips</button>
+        </div>
+        <div class="tab-panel active" data-panel="pattern">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="fn">MIN</span>(<span class="col">col</span>)   <span class="cm">→ smallest value</span>
+<span class="fn">MAX</span>(<span class="col">col</span>)   <span class="cm">→ largest value</span>
+<span class="fn">SUM</span>(<span class="col">col</span>)   <span class="cm">→ total</span>
+<span class="fn">AVG</span>(<span class="col">col</span>)   <span class="cm">→ average</span>
+<span class="fn">COUNT</span>(*)   <span class="cm">→ number of rows</span></div></div>
+        </div>
+        <div class="tab-panel" data-panel="example">
+          <div class="code-wrap"><div class="code-block">
+<button class="copy-btn" onclick="copyCode(this)">COPY</button>
+<span class="kw">SELECT</span>
+  <span class="fn">MIN</span>(<span class="col">salary</span>)   <span class="kw">AS</span> <span class="col">min_sal</span>,
+  <span class="fn">MAX</span>(<span class="col">salary</span>)   <span class="kw">AS</span> <span class="col">max_sal</span>,
+  <span class="fn">SUM</span>(<span class="col">salary</span>)   <span class="kw">AS</span> <span class="col">total</span>,
+  <span class="fn">AVG</span>(<span class="col">salary</span>)   <span class="kw">AS</span> <span class="col">average</span>,
+  <span class="fn">COUNT</span>(*)       <span class="kw">AS</span> <span class="col">headcount</span>
+<span class="kw">FROM</span> <span class="tbl">employees</span>;</div></div>
+        </div>
+        <div class="tab-panel" data-panel="tips">
+          <div class="info-wrap"><ul class="info-list">
+            <li>COUNT(*) counts all rows; COUNT(col) skips NULLs</li>
+            <li>AVG also ignores NULL values automatically</li>
+            <li>Always use GROUP BY to get aggregates per category</li>
+            <li>Can be used inside WINDOW functions with OVER()</li>
+          </ul></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /cards-grid -->
+
+  <!-- MIND MAP -->
+  <div class="sec-label">Final Mind Map</div>
+  <div class="mindmap-wrap">
+    <div class="mindmap-header">
+      <span class="mm-icon">🔥</span>
+      <div>
+        <h2>Think Like SQL</h2>
+        <p>Map the English problem directly to the SQL concept.</p>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Think / English Phrase</th><th>SQL Concept</th><th>Mental Model</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mm-num">01</td><td class="mm-concept">show / list / get data</td><td><span class="mm-sql">SELECT</span></td><td class="mm-think">read the table</td></tr>
+        <tr><td class="mm-num">02</td><td class="mm-concept">only / with condition</td><td><span class="mm-sql">WHERE</span></td><td class="mm-think">filter rows</td></tr>
+        <tr><td class="mm-num">03</td><td class="mm-concept">each / per / for every</td><td><span class="mm-sql">GROUP BY</span></td><td class="mm-think">make buckets</td></tr>
+        <tr><td class="mm-num">04</td><td class="mm-concept">groups with / having more than</td><td><span class="mm-sql">HAVING</span></td><td class="mm-think">filter buckets</td></tr>
+        <tr><td class="mm-num">05</td><td class="mm-concept">highest / lowest / sorted</td><td><span class="mm-sql">ORDER BY</span></td><td class="mm-think">sort output</td></tr>
+        <tr><td class="mm-num">06</td><td class="mm-concept">top N / first few</td><td><span class="mm-sql">LIMIT</span></td><td class="mm-think">cap the rows</td></tr>
+        <tr><td class="mm-num">07</td><td class="mm-concept">combine / related data</td><td><span class="mm-sql">JOIN</span></td><td class="mm-think">connect tables</td></tr>
+        <tr><td class="mm-num">08</td><td class="mm-concept">greater than average</td><td><span class="mm-sql">SUBQUERY</span></td><td class="mm-think">query inside query</td></tr>
+        <tr><td class="mm-num">09</td><td class="mm-concept">has / exists in</td><td><span class="mm-sql">EXISTS</span></td><td class="mm-think">check presence</td></tr>
+        <tr><td class="mm-num">10</td><td class="mm-concept">grade / classify / label</td><td><span class="mm-sql">CASE WHEN</span></td><td class="mm-think">if-else logic</td></tr>
+        <tr><td class="mm-num">11</td><td class="mm-concept">rank / running total</td><td><span class="mm-sql">WINDOW FUNC</span></td><td class="mm-think">analytics without collapse</td></tr>
+        <tr><td class="mm-num">12</td><td class="mm-concept">total / average / how many</td><td><span class="mm-sql">AGG FUNCS</span></td><td class="mm-think">math on data</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  SQL Commands Cheat Sheet &nbsp;·&nbsp; Built for <a href="#">GitHub Pages</a> &nbsp;·&nbsp; 12 Core Commands · 60+ Keywords
+</footer>
+
+<script>
+// ── TAB SWITCHING ──
+function switchTab(btn, panel) {
+  const card = btn.closest('.card-body');
+  card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  card.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  card.querySelector(`[data-panel="${panel}"]`).classList.add('active');
+}
+
+// ── COPY CODE ──
+function copyCode(btn) {
+  const block = btn.parentElement;
+  let text = block.innerText.replace(/^(COPY|COPIED)\n/,'').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'COPIED'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('ok'); }, 1800);
+  });
+}
+
+// ── LEARN TRACKER ──
+const STORAGE_KEY = 'sql_learned';
+function getLearnedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')); } catch { return new Set(); }
+}
+function saveLearnedSet(s) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...s])); } catch {}
+}
+
+function updateProgress() {
+  const learned = getLearnedSet().size;
+  const total = document.querySelectorAll('.learn-btn').length;
+  const pct = Math.round((learned/total)*100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = `${learned} / ${total} learned`;
+}
+
+function toggleLearn(btn) {
+  const card = btn.closest('.card');
+  const id = card.dataset.kw.split(' ')[0];
+  const s = getLearnedSet();
+  if (s.has(id)) {
+    s.delete(id); btn.textContent = '○'; btn.classList.remove('done');
+  } else {
+    s.add(id); btn.textContent = '✓'; btn.classList.add('done');
+  }
+  saveLearnedSet(s);
+  updateProgress();
+}
+
+function resetProgress() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  document.querySelectorAll('.learn-btn').forEach(b => { b.textContent = '○'; b.classList.remove('done'); });
+  updateProgress();
+}
+
+// Restore progress on load
+(function restoreProgress() {
+  const s = getLearnedSet();
+  document.querySelectorAll('.card').forEach(card => {
+    const id = card.dataset.kw.split(' ')[0];
+    if (s.has(id)) {
+      const btn = card.querySelector('.learn-btn');
+      if (btn) { btn.textContent = '✓'; btn.classList.add('done'); }
+    }
+  });
+  updateProgress();
+})();
+
+// ── SEARCH ──
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', applyFilters);
+
+// ── FILTER PILLS ──
+let activeFilter = 'all';
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+function applyFilters() {
+  const q = searchInput.value.toLowerCase().trim();
+  document.querySelectorAll('.card').forEach(card => {
+    const text = (card.dataset.kw + ' ' + card.textContent).toLowerCase();
+    const cat = card.dataset.cat || '';
+    const matchesSearch = !q || text.includes(q);
+    const matchesFilter = activeFilter === 'all' || cat.includes(activeFilter);
+    card.classList.toggle('hidden', !(matchesSearch && matchesFilter));
+  });
+}
+</script>
+</body>
+</html>
